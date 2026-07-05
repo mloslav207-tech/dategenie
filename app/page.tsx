@@ -4,27 +4,47 @@ import { useState } from "react";
 import DateForm from "@/components/DateForm";
 import DateResults from "@/components/DateResults";
 import BackgroundBlobs from "@/components/BackgroundBlobs";
-import { generateMockPlan } from "@/lib/mockData";
 import { Activity, DatePlanInput } from "@/lib/types";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [activities, setActivities] = useState<Activity[] | null>(null);
   const [city, setCity] = useState("");
+  const [totalCost, setTotalCost] = useState("");
+  const [totalLocalCost, setTotalLocalCost] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(input: DatePlanInput) {
+  async function handleSubmit(input: DatePlanInput) {
     setIsLoading(true);
     setCity(input.city);
+    setError(null);
 
-    // Simulated "thinking" delay so the loading state feels intentional.
-    setTimeout(() => {
-      setActivities(generateMockPlan(input));
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate plan");
+      }
+
+      const data = await response.json();
+      setActivities(data.activities);
+      setTotalCost(data.totalCost);
+      setTotalLocalCost(data.totalLocalCost);
+    } catch (err) {
+      console.error(err);
+      setError("The genie is resting. Please try again in a moment. ✨");
+    } finally {
       setIsLoading(false);
-    }, 900);
+    }
   }
 
   function handleReset() {
     setActivities(null);
+    setError(null);
   }
 
   return (
@@ -40,8 +60,20 @@ export default function Home() {
         </p>
       </div>
 
+      {error && (
+        <div className="rounded-2xl border border-petal/40 bg-white/80 px-5 py-3 text-sm text-petal shadow-md">
+          {error}
+        </div>
+      )}
+
       {activities ? (
-        <DateResults activities={activities} city={city} onReset={handleReset} />
+        <DateResults
+          activities={activities}
+          city={city}
+          totalCost={totalCost}
+          totalLocalCost={totalLocalCost}
+          onReset={handleReset}
+        />
       ) : (
         <DateForm onSubmit={handleSubmit} isLoading={isLoading} />
       )}

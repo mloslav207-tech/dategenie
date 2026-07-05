@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { FormEvent } from "react";
-import type { Budget, DatePlanInput } from "@/lib/types";
+import type { DatePlanInput } from "@/lib/types";
 
 const LANGUAGES = [
   "Auto-detect",
@@ -16,6 +16,13 @@ const LANGUAGES = [
   "Russian",
   "Japanese",
   "German",
+  "Czech",
+];
+
+const CURRENCIES = [
+  "USD", "EUR", "GBP", "CZK", "JPY", "CNY", "INR", "AUD", "CAD", "CHF",
+  "SEK", "NOK", "DKK", "PLN", "HUF", "RUB", "BRL", "MXN", "ZAR", "TRY",
+  "AED", "SGD", "HKD", "KRW", "THB", "NZD", "ILS", "SAR", "PHP", "IDR",
 ];
 
 interface DateFormProps {
@@ -27,20 +34,23 @@ export default function DateForm(props: DateFormProps) {
   const { onSubmit, isLoading } = props;
 
   const [city, setCity] = useState("");
-  const [budget, setBudget] = useState<Budget>("medium");
+  const [budgetAmount, setBudgetAmount] = useState("");
+  const [currency, setCurrency] = useState("USD");
   const [interests, setInterests] = useState("");
   const [language, setLanguage] = useState("Auto-detect");
   const [touched, setTouched] = useState(false);
 
   const cityIsValid = city.trim().length > 0;
+  const budgetIsValid = budgetAmount.trim().length > 0 && Number(budgetAmount) > 0;
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setTouched(true);
-    if (!cityIsValid) return;
+    if (!cityIsValid || !budgetIsValid) return;
     onSubmit({
       city: city.trim(),
-      budget: budget,
+      budgetAmount: Number(budgetAmount),
+      currency: currency,
       interests: interests.trim(),
       language: language,
     });
@@ -75,16 +85,33 @@ export default function DateForm(props: DateFormProps) {
           <label htmlFor="budget" className="mb-1.5 block text-sm font-semibold text-ink">
             Budget
           </label>
-          <select
-            id="budget"
-            value={budget}
-            onChange={(e) => setBudget(e.target.value as Budget)}
-            className="focus-ring w-full rounded-2xl border border-plum/15 bg-white/80 px-4 py-3 text-ink transition focus:border-plum/40"
-          >
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
+          <div className="flex gap-2">
+            <input
+              id="budget"
+              type="number"
+              min="1"
+              value={budgetAmount}
+              onChange={(e) => setBudgetAmount(e.target.value)}
+              placeholder="100"
+              className="focus-ring w-full rounded-2xl border border-plum/15 bg-white/80 px-4 py-3 text-ink placeholder:text-ink/40 transition focus:border-plum/40"
+            />
+            <select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              className="focus-ring rounded-2xl border border-plum/15 bg-white/80 px-3 py-3 text-ink transition focus:border-plum/40"
+            >
+              {CURRENCIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+          {touched && !budgetIsValid && (
+            <p className="mt-1.5 text-xs font-medium text-petal">
+              Please enter your budget amount.
+            </p>
+          )}
         </div>
 
         <div>

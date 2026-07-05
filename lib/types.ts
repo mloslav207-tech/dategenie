@@ -1,8 +1,7 @@
-export type Budget = "low" | "medium" | "high";
-
 export interface DatePlanInput {
   city: string;
-  budget: Budget;
+  budgetAmount: number;
+  currency: string;
   interests: string;
   language: string;
 }
@@ -12,4 +11,12 @@ export interface Activity {
   place: string;
   description: string;
   icon: string;
+  estimatedCost: string;
+  localCost: string;
+}
+
+export interface DatePlanResponse {
+  activities: Activity[];
+  totalCost: string;
+  totalLocalCost: string;
 }
