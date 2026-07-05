@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, FormEvent } from "react";
-import { Budget, DatePlanInput } from "@/lib/types";
+import { useState } from "react";
+import type { FormEvent } from "react";
+import type { Budget, DatePlanInput } from "@/lib/types";
 
 const LANGUAGES = [
   "Auto-detect",
@@ -22,21 +23,28 @@ interface DateFormProps {
   isLoading: boolean;
 }
 
-export default function DateForm({ onSubmit, isLoading }: DateFormProps) {
-  const [city, setCity] = useState<string>("");
+export default function DateForm(props: DateFormProps) {
+  const { onSubmit, isLoading } = props;
+
+  const [city, setCity] = useState("");
   const [budget, setBudget] = useState<Budget>("medium");
-  const [interests, setInterests] = useState<string>("");
-  const [language, setLanguage] = useState<string>("Auto-detect");
-  const [touched, setTouched] = useState<boolean>(false);
+  const [interests, setInterests] = useState("");
+  const [language, setLanguage] = useState("Auto-detect");
+  const [touched, setTouched] = useState(false);
 
   const cityIsValid = city.trim().length > 0;
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setTouched(true);
     if (!cityIsValid) return;
-    onSubmit({ city: city.trim(), budget, interests: interests.trim(), language });
-  }
+    onSubmit({
+      city: city.trim(),
+      budget: budget,
+      interests: interests.trim(),
+      language: language,
+    });
+  };
 
   return (
     <form
@@ -73,9 +81,9 @@ export default function DateForm({ onSubmit, isLoading }: DateFormProps) {
             onChange={(e) => setBudget(e.target.value as Budget)}
             className="focus-ring w-full rounded-2xl border border-plum/15 bg-white/80 px-4 py-3 text-ink transition focus:border-plum/40"
           >
-            <option value="low">Low — $</option>
-            <option value="medium">Medium — $$</option>
-            <option value="high">High — $$$</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
           </select>
         </div>
 
@@ -114,4 +122,11 @@ export default function DateForm({ onSubmit, isLoading }: DateFormProps) {
         <button
           type="submit"
           disabled={isLoading}
-          className="group relative mt-2 flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-petal to-plum 
+          className="mt-2 flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-petal to-plum px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-plum/30 transition active:scale-95 disabled:opacity-80"
+        >
+          {isLoading ? "Consulting the genie..." : "Plan my date"}
+        </button>
+      </div>
+    </form>
+  );
+}
